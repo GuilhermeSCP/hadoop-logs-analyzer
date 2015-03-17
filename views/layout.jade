@@ -1,0 +1,309 @@
+doctype
+html(lang='en')
+  head
+    title= title
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', type='text/css', href='//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css')
+    link(rel='stylesheet', type='text/css', href='http://yui.yahooapis.com/pure/0.5.0/pure-min.css')
+    link(rel='stylesheet', type='text/css', href='http://yui.yahooapis.com/pure/0.5.0/grids-responsive-min.css')
+    link(rel='stylesheet', href='http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css')
+    link(href='http://fonts.googleapis.com/css?family=Open+Sans:700,300,400', rel='stylesheet', type='text/css')
+    link(rel='stylesheet', href='stylesheets/style.css')
+    script(src="//code.jquery.com/jquery-1.11.0.min.js")
+    script(src="//code.jquery.com/jquery-migrate-1.2.1.min.js")
+    script(type="text/javascript" src="http://d3js.org/d3.v3.min.js")
+    script(type="text/javascript" src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js")
+    script(type="text/javascript" src="/javascripts/jquery.lettering.js")
+  body
+    .pure-g
+      block content
+      
+  script(type="text/javascript").
+    $(document).ready(function() {
+        $("#cs-text").lettering().children('span').wrap('<span />');
+    });
+    $('form').submit(function(event){
+      event.preventDefault();
+      ParseFile();
+    });
+    function ParseFile()
+    {
+      var file, tasks=[], objects=[], workers=[];
+      var files = document.getElementById('files').files;
+      if (!files.length) {
+        alert('Please select a file!');
+        return;
+      }
+      else{
+        $('#loading').show().delay(5000).queue(function(n) {
+          $(this).hide(); n();
+          function Task (id) {
+            this.taskId = id;
+            this.type = "";
+            this.startTime = "";
+            this.finishTime  = "";
+            this.worker = "";
+          }
+
+          Task.prototype.getStartTime = function() {
+            return this.startTime;
+          }
+
+          Task.prototype.getFinishTime = function() {
+            return this.finishTime;
+          }
+
+          var reader = new FileReader();
+
+          reader.readAsText(files[0]);
+
+          reader.onloadend = function(){
+            var dataURL = reader.result;
+            file = reader.result;            
+
+            objects = file.split("\n\n");
+            var data = "[";
+            for(var j=1;j<objects.length-1;j++){
+              data=data+objects[j]+",";
+            }
+            data=data.slice(0,-1);
+            data=data+"]";  
+            var json = JSON.parse(data);
+            $.each(json, function(idx, obj) {
+              if(obj.type === "TASK_STARTED"){
+                var task = new Task(obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].taskid);
+                console.log("taskid: "+ obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].taskid);
+                console.log("tasktype: "+ obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].taskType);
+                console.log("starttime: "+ obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].startTime);
+                task.type = obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].taskType;
+                task.startTime = obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskStarted"].startTime;
+
+
+                tasks.push(task);
+                console.log("tasks size: "+ tasks.length);
+              }
+              else if(obj.type === "TASK_FINISHED"){
+
+                var id = obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskFinished"].taskid;
+                //check tasks array position for taskid
+                var index;
+                for(var i=0;i<=tasks.length-1;i++){
+                  if(tasks[i].taskId == id) 
+                    index = i;
+                }
+                var attmpt= obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskFinished"].successfulAttemptId;
+                $.each(json, function(idxx, objx){
+                  if(tasks[index].type == "MAP" && objx.type == "MAP_ATTEMPT_FINISHED"){
+                    if(objx.event["org.apache.hadoop.mapreduce.jobhistory.MapAttemptFinished"].attemptId == attmpt){
+                      tasks[index].worker = objx.event["org.apache.hadoop.mapreduce.jobhistory.MapAttemptFinished"].hostname;
+                    }
+                  }
+                  else if(tasks[index].type == "REDUCE" && objx.type == "REDUCE_ATTEMPT_FINISHED"){
+                    if(objx.event["org.apache.hadoop.mapreduce.jobhistory.ReduceAttemptFinished"].attemptId == attmpt){
+                      tasks[index].worker = objx.event["org.apache.hadoop.mapreduce.jobhistory.ReduceAttemptFinished"].hostname;
+                    }
+                  }
+                });
+                tasks[index].finishTime = obj.event["org.apache.hadoop.mapreduce.jobhistory.TaskFinished"].finishTime;
+              }
+            });
+            for(var i=0;i<tasks.lenght-1;i++){
+              for(var j=0;j<workers.length-1;j++){
+                if(typeof workers[j] == tasks[i].worker)
+                  workers.push(tasks[i].worker);
+              }
+            }
+            var min=999999999999999999999999999;
+            tasks = tasks.reverse();
+            var jstring = "[";
+            var map_color = '"grey"';
+            var reduce_color = '"black"';
+            for(var i=0;i<tasks.length;i++){
+              jstring = jstring + '{"node": "' + tasks[i].worker + '", "y_axis":' + parseInt(25*i+10) + ', "tasks": [ {"task": "' + tasks[i].type + '", "x_axis": ' + tasks[i].startTime +', "width": ' + parseInt(tasks[i].finishTime-tasks[i].startTime) + ', "color": ';
+              if(tasks[i].type=="MAP"){
+                jstring += map_color;
+              }
+              else if(tasks[i].type=="REDUCE")
+                jstring += reduce_color; 
+              jstring += "}]},";
+
+              if(tasks[i].startTime<min)
+                min=tasks[i].startTime;
+            }
+            jstring = jstring.slice(0,-1);
+            jstring += "]";
+
+            console.log(jstring);
+            draw(JSON.parse(jstring), min);
+          };
+        });
+      }
+    }
+
+    function convertSeconds(seconds){
+      var totalSec = new Date().getTime() / 1000;
+      var hours = parseInt( seconds / 3600 ) % 24;
+      var minutes = parseInt( seconds / 60 ) % 60;
+      var seconds = seconds % 60;
+      var result = (hours < 10 ? "0" + hours : hours) + "h:" + (minutes < 10 ? "0" + minutes : minutes) + "m:" + (seconds  < 10 ? "0" + seconds : seconds) + "s";
+      return result;
+    }
+
+    function draw(jsonData, min) {
+      var scale = 0;
+      var bar_height = 20;
+      var max_x = 0;
+      var max_y = 0;
+      var jsonDataFinal= [];
+      
+      /*var jsonData = 
+        [{
+        "node": "g1m1w2-worker-001.novalocal",
+        "y_axis": 10,
+        "tasks": [{
+            "task": "REDUCE",
+            "x_axis": 1417204227417,
+            "width": 39016,
+            "color": "green"
+          },
+          {
+            "task": "MAP",
+            "x_axis": 1417204227416,
+            "width": 29414,
+            "color": "red"
+          },
+          {
+            "task": "MAP",
+            "x_axis": 1417204227352,
+            "width": 29811,
+            "color": "red"
+          }]
+        }, {
+        "node": "g1m1w2-worker-002.novalocal",
+        "y_axis": 60,
+        "tasks": [{
+          "task": "REDUCE",
+          "x_axis": 1417204227417,
+          "width": 39052,
+          "color": "green"
+          }]
+        }];*/
+      $("#tasklist").append("<div class='tasksTitle'><b> Tasks Performed </b></di>");
+          
+      for(var i = 0; i < jsonData.length; i++) 
+      {
+        var temp_x;
+        var temp_y = jsonData[i].y_axis + bar_height;
+        
+        for(var j = 0; j < jsonData[i].tasks.length; j++)
+        {      
+          temp_x = (jsonData[i].tasks[j].x_axis - min) + parseInt(jsonData[i].tasks[j].width);
+          if ( temp_x >= max_x ) { 
+            max_x = temp_x; 
+          }
+          $("#tasklist .tasksTitle").append("<div class='tasksbody'>" + jsonData[i].tasks[j].task + ": "+ convertSeconds(parseInt(jsonData[i].tasks[j].width)) +"</div>");
+          
+          var rect =
+              {
+                "node": jsonData[i].node,
+                "task": jsonData[i].tasks[j].task,
+                "x_axis": jsonData[i].tasks[j].x_axis, 
+                "y_axis": jsonData[i].y_axis,
+                "width": parseInt(jsonData[i].tasks[j].width), 
+                "color" : jsonData[i].tasks[j].color
+              };
+          jsonDataFinal.push(rect)
+        }
+        if ( temp_y >= max_y ) { max_y = temp_y; }
+      }
+      
+      $("#tasklist").append("<b>Total Time: </b>" + convertSeconds(max_x));
+                            
+      if(max_x > 1000000)
+      {
+        scale = 10000;
+      }
+      else if(max_x > 100000)
+      {
+        scale = 1000;
+      }
+      else if(max_x > 10000)
+      {
+        scale = 100;
+      }
+      else
+      {
+        scale = 10;
+      }
+      
+      var svgContainer = d3.select("#graph").append("svg").attr("width", parseFloat(max_x/scale) + 100).attr("height", max_y +70);
+      
+      var rectangleGroup = svgContainer.append("g").attr("transform", "translate(10,30)");  
+      
+      var tip = d3.tip().attr('class', 'd3-tip').offset([-20, 0])
+      .html(function(d) {
+        var duration = convertSeconds(d.width);
+        var startTime = convertSeconds(d.x_axis - min);
+        return "<div class='tooltip'><div>Worker " + d.node + "</div><div>Task " + d.task + "</div><div>Start Time " + convertSeconds(d.x_axis - min) + "</div><div>Total Time " + convertSeconds(d.width) + "</div></div>"
+      })
+
+      svgContainer.call(tip);
+
+      var rectangles = rectangleGroup.selectAll("rect").data(jsonDataFinal).enter().append("rect").on('mouseenter', function(d) {
+        tip.show(d);
+        tip.style({'opacity': '0.8'});
+      }).on('mouseout', function(d) {
+        tip.hide(d);
+      });
+
+      var rectangleAttributes = rectangles
+      .attr("x", function (d) { return parseFloat((d.x_axis - min)/scale); })
+      .attr("y", function (d) { return d.y_axis; })
+      .attr("height", 20)
+      .attr("width", 0)
+      .style("fill", function(d) { return d.color; })
+      .transition()
+      .duration(750)
+      .delay(500)
+      .attr("width", function(d) { return parseFloat(d.width / scale); });
+      
+      svgContainer.append("text")
+        .attr("x", (parseFloat(max_x/scale) / 2))             
+        .attr("y", max_y + 65)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "8px") 
+        .style("text-decoration", "bold")  
+        .text("MouseOver for Task Info");
+      
+      svgContainer.append("text")
+        .attr("x", (parseFloat(max_x/scale) / 2))             
+        .attr("y", 17)
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "bold")  
+        .text("Open Stack Log Graph");
+        
+      var info = "1/";
+      info += scale;
+      info += "sec";
+      svgContainer.append("text")
+        .attr("x", parseFloat(max_x/scale) - 25)             
+        .attr("y", max_y + 55)
+        .attr("text-anchor", "right")  
+        .style("font-size", "10px") 
+        .style("text-decoration", "bold")
+        .text(info);
+        
+      var axisScale = d3.scale.linear().domain([0, parseFloat(max_x/scale)]).range([0, parseFloat(max_x/scale)]);
+      
+      //Create the Axis
+      var xAxis = d3.svg
+      .axis().scale(axisScale)
+      .orient("bottom")
+      .ticks(5);
+
+      //Create an SVG group Element for the Axis elements and call the xAxis function
+      var xAxisGroup = svgContainer.append("g").attr("transform", "translate(10," + (max_y + 30) + ")").attr("class", "axis").call(xAxis);
+    }

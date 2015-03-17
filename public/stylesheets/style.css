@@ -1,0 +1,288 @@
+body {
+  background: #f4f3f1;
+  color: #5a5350;
+  font-weight: 300;
+  font-family: "Open Sans Condensed","Arial Narrow",serif;
+}
+
+#loading {
+  left: 45%;
+  top: 50%;
+  position: fixed;
+}
+
+#graph {
+  position: fixed;
+  left: 25%;
+  top: 45%;
+}
+
+.tasksbody {
+  margin: 1%;
+}
+
+.header{
+  height: 100px;
+  width: 100%;
+  background-color: #FCE1AB;
+  position: fixed;
+  -webkit-box-shadow: 0px 3px 25px 0px rgba(0,0,0,0.5);
+  -moz-box-shadow: 0px 3px 25px 0px rgba(0,0,0,0.5);
+  box-shadow: 0px 3px 25px 0px rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+.content{
+  position: absolute;
+  top: 10%;
+  margin: 3%;
+  width: 97%;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-family: sans-serif
+  font-size: 11px;
+}
+
+.bar:hover {
+  fill: orangered ;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.tooltip {
+  opacity: 1;
+  position: absolute;
+  top: 5%;
+  float: left;
+  display: block;
+  left: 5%;
+}
+
+.tooltip > div {
+  width: 100%;
+  float: left;
+  display: block;
+}
+
+.d3-tip {
+  background: #fff;
+  bottom: 100%;
+  color: #fff;
+  display: block;
+  left: -25px;
+  margin-bottom: 15px;
+  opacity: 0;
+  padding: 3%;
+  pointer-events: none;
+  position: absolute;
+  line-height: 1;
+  font-weight: bold;
+  border-radius: 2px;
+  color: #000;
+  width: 15%;
+  -webkit-transform: translateY(10px);
+  -moz-transform: translateY(10px);
+  -ms-transform: translateY(10px);
+  -o-transform: translateY(10px);
+  transform: translateY(10px);
+  -webkit-transition: all .25s ease-out;
+  -moz-transition: all .25s ease-out;
+  -ms-transition: all .25s ease-out;
+  -o-transition: all .25s ease-out;
+  transition: all .25s ease-out;
+  -webkit-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.75);
+  -moz-box-shadow:    0px 5px 11px 0px rgba(50, 50, 50, 0.75);
+  box-shadow:         0px 5px 11px 0px rgba(50, 50, 50, 0.75);
+}
+
+.d3-tip:before {
+  bottom: -20px;
+  content: " ";
+  display: block;
+  height: 20px;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  border-left: solid transparent 10px;
+  border-right: solid transparent 10px;
+  border-top: solid #fff 10px;
+  bottom: -10px;
+  content: " ";
+  height: 0;
+  left: 50%;
+  margin-left: -13px;
+  position: absolute;
+  width: 0;
+}
+
+.cs-text {
+  position: fixed;
+  top: 0;
+  right: 0;
+  margin: 0.5em auto;
+  cursor: pointer;
+}
+
+.cs-text > span {
+  -webkit-perspective: 200px;
+  -moz-perspective: 200px;
+  -o-perspective: 200px;
+  -ms-perspective: 200px;
+  perspective: 200px;
+  float: left;
+  position: relative;
+}
+
+.cs-text > span:first-child,
+.cs-text > span:last-child {
+  z-index: 1;
+}
+
+.cs-text > span:nth-child(2),
+.cs-text > span:nth-child(7){
+  z-index: 2;
+}
+
+.cs-text > span:nth-child(3),
+.cs-text > span:nth-child(6){
+  z-index: 3;
+}
+
+.cs-text > span:nth-child(4) {
+  z-index: 5;
+}
+
+.cs-text > span:nth-child(5){
+  z-index: 4;
+}
+
+.cs-text span span {
+  display: block;
+  background: #646464;
+  background: url(../images/scratch-texture.png), -moz-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -webkit-gradient(linear, left top, right top, color-stop(0%,#646464), color-stop(100%,#C2C2C2));
+  background: url(../images/scratch-texture.png), -webkit-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -o-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -ms-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), linear-gradient(to right, #646464 0%,#C2C2C2 100%);
+  box-shadow: -1px 0 2px rgba(255,255,255,0.4), -2px 0 0 #FFFFFF, -2px 7px 9px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-shadow: -1px -1px 2px rgba(0,0,0,0.6);
+  width: 100px;
+  height: 60px;
+  line-height: 65px;
+  font-weight: 700;
+  font-size: 40px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.cs-text > span:nth-child(n+5) span {
+  background: #646464;
+  background: url(../images/scratch-texture.png), -moz-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -webkit-gradient(linear, left top, right top, color-stop(0%,#646464), color-stop(100%,#C2C2C2));
+  background: url(../images/scratch-texture.png), -webkit-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -o-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), -ms-linear-gradient(left, #646464 0%,#C2C2C2 100%);
+  background: url(../images/scratch-texture.png), linear-gradient(to right, #646464 0%,#C2C2C2 100%);
+  box-shadow: -1px 0 2px rgba(255,255,255,0.4), -2px 0 0 #FFFFFF, -2px 7px 9px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-shadow: -1px -1px 2px rgba(0,0,0,0.6);
+}
+
+.cs-text > span:nth-child(4) span{
+  -webkit-transform: translateZ(30px) rotateY(25deg);
+  -moz-transform: translateZ(30px) rotateY(25deg);
+  -o-transform: translateZ(30px) rotateY(25deg);
+  -ms-transform: translateZ(30px) rotateY(25deg);
+  transform: translateZ(30px) rotateY(25deg);
+}
+
+.cs-text > span:nth-child(5) span{
+  -webkit-transform: translateZ(30px) rotateY(-25deg);
+  -moz-transform: translateZ(30px) rotateY(-25deg);
+  -o-transform: translateZ(30px) rotateY(-25deg);
+  -ms-transform: translateZ(30px) rotateY(-25deg);
+  transform: translateZ(30px) rotateY(-25deg);
+}
+
+.cs-text > span:nth-child(3) span{
+  -webkit-transform: translateZ(30px) rotateY(30deg);
+  -moz-transform: translateZ(30px) rotateY(30deg);
+  -o-transform: translateZ(30px) rotateY(30deg);
+  -ms-transform: translateZ(30px) rotateY(30deg);
+  transform: translateZ(30px) rotateY(30deg);
+}
+
+.cs-text > span:nth-child(6) span{
+  -webkit-transform: translateZ(30px) rotateY(-30deg);
+  -moz-transform: translateZ(30px) rotateY(-30deg);
+  -o-transform: translateZ(30px) rotateY(-30deg);
+  -ms-transform: translateZ(30px) rotateY(-30deg);
+  transform: translateZ(30px) rotateY(-30deg);
+}
+
+.cs-text > span:nth-child(2) span{
+  -webkit-transform: translateZ(20px) rotateY(20deg);
+  -moz-transform: translateZ(20px) rotateY(20deg);
+  -o-transform: translateZ(20px) rotateY(20deg);
+  -ms-transform: translateZ(20px) rotateY(20deg);
+  transform: translateZ(20px) rotateY(20deg);
+}
+
+.cs-text > span:nth-child(7) span{
+  -webkit-transform: translateZ(20px) rotateY(-20deg);
+  -moz-transform: translateZ(20px) rotateY(-20deg);
+  -o-transform: translateZ(20px) rotateY(-20deg);
+  -ms-transform: translateZ(20px) rotateY(-20deg);
+  transform: translateZ(20px) rotateY(-20deg);
+}
+
+.cs-text > span:first-child span{
+  -webkit-transform: translateZ(10px) rotateY(10deg);
+  -moz-transform: translateZ(10px) rotateY(10deg);
+  -o-transform: translateZ(10px) rotateY(10deg);
+  -ms-transform: translateZ(10px) rotateY(10deg);
+  transform: translateZ(10px) rotateY(10deg);
+}
+
+.cs-text > span:last-child span{
+  -webkit-transform: translateZ(10px) rotateY(-10deg);
+  -moz-transform: translateZ(10px) rotateY(-10deg);
+  -o-transform: translateZ(10px) rotateY(-10deg);
+  -ms-transform: translateZ(10px) rotateY(-10deg);
+  transform: translateZ(10px) rotateY(-10deg);
+}
+
+.cs-text > span:nth-child(-n+4) {
+  -webkit-transform: translateX(14px);
+  -moz-transform: translateX(14px);
+  -o-transform: translateX(14px);
+  -ms-transform: translateX(14px);
+  transform: translateX(14px);
+}
+
+.cs-text > span:nth-child(n+5) {
+  -webkit-transform: translateX(-14px);
+  -moz-transform: translateX(-14px);
+  -o-transform: translateX(-14px);
+  -ms-transform: translateX(-14px);
+  transform: translateX(-14px);
+}
+
+
+

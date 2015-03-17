@@ -1,0 +1,121 @@
+extends layout
+
+block content
+  .content.pure-u-1
+    #graph
+
+script.
+  var jsonData = 
+  [
+    {
+      "node": "worker1",
+      "prof": "toze",
+      "y_axis": 10,
+      "tasks":
+      [
+        {"task": "map", "x_axis": 0, "width":180, "color" : "green"},
+      ]
+    },
+    {
+      "node": "worker2",
+      "prof": "toze",
+      "y_axis": 40,
+      "tasks":
+      [
+        {"task": "map","x_axis": 0, "width":800, "color" : "green"}
+      ]
+    },
+    {
+      "node": "worker2",
+      "y_axis": 70,
+      "prof": "toze",
+      "tasks":
+      [
+        {"task": "reduce", "x_axis": 0, "width":800, "color" : "yellow"}
+      ]
+    }
+  ];
+  
+  
+  var bar_height = 20;
+  var max_x = 0;
+  var max_y = 0;
+  
+  var jsonDataFinal = [];
+  for(var i = 0; i < jsonData.length; i++) 
+  {
+    var temp_x;
+    var temp_y = jsonData[i].y_axis + bar_height;
+    
+    for(var j = 0; j < jsonData[i].tasks.length; j++)
+    {      
+      temp_x = jsonData[i].tasks[j].x_axis + jsonData[i].tasks[j].width;
+      if ( temp_x >= max_x ) { max_x = temp_x; }
+      var rect = 
+      {
+        "node": "worker1",
+        "task": jsonData[i].tasks[j].task, 
+        "prof": jsonData[i].prof,
+        "x_axis": jsonData[i].tasks[j].x_axis, 
+        "y_axis": jsonData[i].y_axis,
+        "width": jsonData[i].tasks[j].width, 
+        "color" : jsonData[i].tasks[j].color
+      };
+      jsonDataFinal.push(rect);
+    }
+    if ( temp_y >= max_y ) { max_y = temp_y; }
+  }
+
+  var svgContainer = d3.select("#graph").append("svg")
+  .attr("width", max_x + 20)
+  .attr("height", max_y + 20);
+  
+  var rectangleGroup = svgContainer
+  .append("g");  
+  
+  var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-20, 0])
+  .html(function(d) {
+    return "<div class='tooltip'><div> Task: " + d.task + "</div><div> Worker: " + d.node + "</div><div> Prof: " + d.prof + "</div></div>"})
+  
+  svgContainer.call(tip);
+
+  var rectangles = rectangleGroup
+  .selectAll("rect")
+  .data(jsonDataFinal)
+  .enter()
+  .append("rect")
+  .on('mouseover', function(d) {
+    tip.show(d);
+    tip.style({'opacity': '0.8'});
+  })
+  .on('mouseout', function(d) {
+    tip.hide(d);
+  });
+
+  var rectangleAttributes = rectangles
+  .attr("x", function (d) { return d.x_axis; })
+  .attr("y", function (d) { return d.y_axis; })
+  .attr("height", 20)
+  .attr("width", function (d) { return d.width; })
+  .style("fill", function(d) { return d.color; });
+
+  var axisScale = d3
+  .scale
+  .linear()
+  .domain([0, 100])
+  .range([0, max_x]);
+
+  //Create the Axis
+  var xAxis = d3
+  .svg
+  .axis()
+  .scale(axisScale)
+  .orient("bottom");
+
+  //Create an SVG group Element for the Axis elements and call the xAxis function
+  var xAxisGroup = svgContainer
+  .append("g")
+  .attr("transform", "translate(0," + max_y + ")")
+  .call(xAxis);

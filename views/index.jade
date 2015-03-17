@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  .header
+    h2#cs-text.cs-text OpenLog
+  .content.pure-u-1
+    .browse-file
+      h1= title
+      form(role='form')
+        .form-group
+          label(for='files') File input
+          input#files(type='file',name='files')
+          p.help-block Example block-level help text here.
+        button.btn.btn-default(type='submit') Generate Graph
+      ul#list
+    #tasklist
+    #graph
+    #loading(style='display:none;')
+      img(src='/images/loading.gif', alt='')
+      | Loading!
